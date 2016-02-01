@@ -44,6 +44,10 @@ struct virtqueue {
  *	len: the length written into the buffer
  *	Returns NULL or the "data" token handed to add_buf.
  * @disable_cb: disable callbacks
+unsigned virtqueue_enable_cb_prepare(struct virtqueue *vq);
+
+bool virtqueue_poll(struct virtqueue *vq, unsigned);
+
  *	vq: the struct virtqueue we're talking about.
  *	Note that this is not necessarily synchronous, hence unreliable and only
  *	useful as an optimization.

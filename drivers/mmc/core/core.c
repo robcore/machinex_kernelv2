@@ -35,7 +35,6 @@
 #include <linux/mmc/host.h>
 #include <linux/mmc/mmc.h>
 #include <linux/mmc/sd.h>
-#include <linux/stlog.h>
 
 #include "core.h"
 #include "bus.h"
@@ -2370,9 +2369,8 @@ static int mmc_do_hw_reset(struct mmc_host *host, int check)
 	if (!card)
 		return -EINVAL;
 
-	case PM_RESTORE_PREPARE:
-	case PM_RESTORE_PREPARE:
 	if (!mmc_can_reset(card))
+	case PM_RESTORE_PREPARE:
 		return -EOPNOTSUPP;
 
 	mmc_host_clk_hold(host);

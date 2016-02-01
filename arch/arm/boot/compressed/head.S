@@ -10,6 +10,7 @@
  */
 #include <linux/linkage.h>
 
+	.arch	armv7-a
 /*
  * Debugging stuff
  *
@@ -391,9 +392,9 @@ wont_overwrite:
  */
 		orrs	r1, r0, r5
 #ifdef CONFIG_CRYPTO_FIPS_OLD_INTEGRITY_CHECK
-		beq	not_relocated_copy
+		beq not_relocated_copy
 #else
-                beq     not_relocated
+		beq	not_relocated
 #endif
 		add	r11, r11, r0
 		add	r12, r12, r0

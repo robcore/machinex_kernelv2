@@ -976,6 +976,7 @@ static inline void hci_key_change_cfm(struct hci_conn *conn, __u8 status)
 		if (cb->key_change_cfm)
 			cb->key_change_cfm(conn, status);
 	}
+int mgmt_set_powered_failed(struct hci_dev *hdev, int err);
 	read_unlock_bh(&hci_cb_list_lock);
 }
 
@@ -1110,7 +1111,6 @@ void hci_le_conn_update(struct hci_conn *conn, u16 min, u16 max,
 					u16 latency, u16 to_multiplier);
 void hci_le_start_enc(struct hci_conn *conn, __le16 ediv, __u8 rand[8],
 							__u8 ltk[16]);
-void hci_le_ltk_reply(struct hci_conn *conn, u8 ltk[16]);
 void hci_le_ltk_neg_reply(struct hci_conn *conn);
 
 void hci_read_rssi(struct hci_conn *conn);

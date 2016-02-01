@@ -302,7 +302,7 @@ static struct neighbour *neigh_alloc(struct neigh_table *tbl, struct net_device 
 		goto out_entries;
 	}
 
-	skb_queue_head_init(&n->arp_queue);
+	__skb_queue_head_init(&n->arp_queue);
 	rwlock_init(&n->lock);
 	seqlock_init(&n->ha_lock);
 	n->updated	  = n->used = now;

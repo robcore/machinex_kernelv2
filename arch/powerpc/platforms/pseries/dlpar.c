@@ -422,12 +422,6 @@ static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
 		goto out;
 	}
 
-	rc = dlpar_acquire_drc(drc_index);
-	if (rc) {
-		rc = -EINVAL;
-		goto out;
-	}
-
 	dn = dlpar_configure_connector(drc_index);
 	if (!dn) {
 		rc = -EINVAL;

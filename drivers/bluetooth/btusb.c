@@ -55,6 +55,7 @@ static struct usb_driver btusb_driver;
 #define BTUSB_BROKEN_ISOC	0x20
 #define BTUSB_WRONG_SCO_MTU	0x40
 #define BTUSB_ATH3012		0x80
+#define BTUSB_INTEL_BOOT	0x200
 
 static struct usb_device_id btusb_table[] = {
 	/* Generic Bluetooth USB device */
@@ -142,8 +143,6 @@ static struct usb_device_id blacklist_table[] = {
 	/* IBM/Lenovo ThinkPad with Broadcom chip */
 	{ USB_DEVICE(0x0a5c, 0x201e), .driver_info = BTUSB_WRONG_SCO_MTU },
 	{ USB_DEVICE(0x0a5c, 0x2110), .driver_info = BTUSB_WRONG_SCO_MTU },
-	{ USB_DEVICE(0x04f2, 0xaff1), .driver_info = BTUSB_IGNORE },
-	{ USB_DEVICE(0x04f2, 0xaff1), .driver_info = BTUSB_IGNORE },
 
 	/* HP laptop with Broadcom chip */
 	{ USB_DEVICE(0x03f0, 0x171d), .driver_info = BTUSB_WRONG_SCO_MTU },
@@ -181,8 +180,6 @@ static struct usb_device_id blacklist_table[] = {
 
 	/* Frontline ComProbe Bluetooth Sniffer */
 	{ USB_DEVICE(0x16d3, 0x0002), .driver_info = BTUSB_SNIFFER },
-	{ USB_DEVICE(0x13d3, 0x3423), .driver_info = BTUSB_ATH3012 },
-	{ USB_DEVICE(0x13d3, 0x3474), .driver_info = BTUSB_ATH3012 },
 
 	{ }	/* Terminating entry */
 };
@@ -1017,6 +1014,9 @@ static int btusb_probe(struct usb_interface *intf,
 	hdev->notify   = btusb_notify;
 
 	hdev->owner = THIS_MODULE;
+
+	if (id->driver_info & BTUSB_INTEL_BOOT)
+		set_bit(HCI_QUIRK_RAW_DEVICE, &hdev->quirks);
 
 	/* Interface numbers are hardcoded in the specification */
 	data->isoc = usb_ifnum_to_if(data->udev, 1);

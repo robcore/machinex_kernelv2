@@ -338,6 +338,7 @@ int snd_ctl_add(struct snd_card *card, struct snd_kcontrol *kcontrol)
 	struct snd_ctl_elem_id id;
 	unsigned int idx;
 	unsigned int count;
+	unsigned int count;
 	int err = -EINVAL;
 
 	if (! kcontrol)
@@ -412,6 +413,9 @@ int snd_ctl_replace(struct snd_card *card, struct snd_kcontrol *kcontrol,
 		goto error;
 	}
 	id = kcontrol->id;
+	if (id.index > UINT_MAX - kcontrol->count)
+		goto error;
+
 	down_write(&card->controls_rwsem);
 	old = snd_ctl_find_id(card, &id);
 	if (!old) {
@@ -462,6 +466,7 @@ EXPORT_SYMBOL(snd_ctl_replace);
 int snd_ctl_remove(struct snd_card *card, struct snd_kcontrol *kcontrol)
 {
 	struct snd_ctl_elem_id id;
+	unsigned int count;
 	unsigned int idx;
 
 	if (snd_BUG_ON(!card || !kcontrol))
@@ -1063,6 +1068,7 @@ static int snd_ctl_elem_user_put(struct snd_kcontrol *kcontrol,
 	change = memcmp(&ucontrol->value, ue->elem_data, ue->elem_data_size) != 0;
 	if (change)
 		memcpy(ue->elem_data, &ucontrol->value, ue->elem_data_size);
+	struct snd_card *card;
 	mutex_unlock(&ue->card->user_ctl_lock);
 	return change;
 }
@@ -1167,10 +1173,6 @@ static int snd_ctl_elem_add(struct snd_ctl_file *file,
 	int idx, err;
 
 	if (info->count < 1)
-		return -EINVAL;
-	if (!*info->id.name)
-		return -EINVAL;
-	if (strnlen(info->id.name, sizeof(info->id.name)) >= sizeof(info->id.name))
 		return -EINVAL;
 	access = info->access == 0 ? SNDRV_CTL_ELEM_ACCESS_READWRITE :
 		(info->access & (SNDRV_CTL_ELEM_ACCESS_READWRITE|
@@ -1286,6 +1288,7 @@ static int snd_ctl_elem_remove(struct snd_ctl_file *file,
 
 	if (copy_from_user(&id, _id, sizeof(id)))
 		return -EFAULT;
+	ue->card = card;
 	return snd_ctl_remove_user_ctl(file, &id);
 }
 

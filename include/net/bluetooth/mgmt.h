@@ -42,6 +42,7 @@ struct mgmt_rp_read_index_list {
 } __packed;
 
 /* Reserve one extra byte for names in management messages so that they
+#define MGMT_STATUS_RFKILLED		0x12
  * are always guaranteed to be nul-terminated */
 #define MGMT_MAX_NAME_LENGTH		(HCI_MAX_NAME_LENGTH + 1)
 

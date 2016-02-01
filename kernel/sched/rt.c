@@ -452,7 +452,7 @@ int unthrottle_rt_rq(struct rq *rq)
 	if (rq->rt.rt_throttled 
 		&& current->sched_class == &stop_sched_class) {
 		rq->rt.rt_throttled = 0;
-		printk_deferred("sched: RT unthrottled for migration\n");
+		printk_sched("sched: RT unthrottled for migration\n");
 		return 1;
 	}
 
@@ -700,6 +700,7 @@ balanced:
 		 * runtime - in which case borrowing doesn't make sense.
 		 */
 		rt_rq->rt_runtime = RUNTIME_INF;
+		rt_rq->rt_throttled = 0;
 		rt_rq->rt_throttled = 0;
 		raw_spin_unlock(&rt_rq->rt_runtime_lock);
 		raw_spin_unlock(&rt_b->rt_runtime_lock);
@@ -1410,16 +1411,6 @@ static struct task_struct *_pick_next_task_rt(struct rq *rq)
 		rt_rq = group_rt_rq(rt_se);
 	} while (rt_rq);
 
-	/*
-	 * Force update of rq->clock_task in case we failed to do so in
-	 * put_prev_task. A stale value can cause us to over-charge execution
-	 * time to real-time task, that could trigger throttling unnecessarily
-	 */
-	if (rq->skip_clock_update > 0) {
-		rq->skip_clock_update = 0;
-		update_rq_clock(rq);
-	}
-
 	p = rt_task_of(rt_se);
 	p->se.exec_start = rq->clock_task;
 
@@ -2055,6 +2046,8 @@ static void watchdog(struct rq *rq, struct task_struct *p)
 
 static void task_tick_rt(struct rq *rq, struct task_struct *p, int queued)
 {
+	struct sched_rt_entity *rt_se = &p->rt;
+
 	struct sched_rt_entity *rt_se = &p->rt;
 
 	update_curr_rt(rq);

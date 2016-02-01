@@ -510,6 +510,7 @@ void __ext4_error(struct super_block *sb, const char *function,
 	else
 		printk(KERN_ERR "__ext4_error: failed to allocate page buf for panic msg\n");
 	va_end(args);
+	save_error_info(sb, function, line);
 
 	ext4_handle_error(sb, page_buf);
 	if (page_buf)
@@ -755,6 +756,12 @@ __acquires(bitlock)
 	if (block)
 		printk(KERN_CONT "block %llu:", (unsigned long long) block);
 	printk(KERN_CONT "%pV\n", &vaf);
+	page_buf = (char *)__get_free_page(GFP_ATOMIC);
+	if (page_buf)
+		sprintf(page_buf, "%s %s:%u: %pV",
+					"***Keep this device after RDX, do not reboot***", function, line, &vaf);
+	else
+		printk(KERN_ERR "__ext4_error: failed to allocate page buf for panic msg\n");
 	va_end(args);
 
 	if (test_opt(sb, ERRORS_CONT)) {
@@ -3890,6 +3897,7 @@ cantfind_ext4:
 
 	if (!silent)
 		ext4_msg(sb, KERN_ERR, "VFS: Can't find ext4 filesystem");
+
 	goto failed_mount;
 
 failed_mount7:

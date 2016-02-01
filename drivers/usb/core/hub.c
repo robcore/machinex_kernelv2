@@ -2133,6 +2133,12 @@ int usb_new_device(struct usb_device *udev)
 
 	/* Tell the world! */
 	announce_device(udev);
+#ifdef CONFIG_USB_HOST_NOTIFY
+#if defined(CONFIG_MUIC_MAX77693_SUPPORT_OTG_AUDIO_DOCK)
+	call_audiodock_notify(udev);
+#endif
+	call_battery_notify(udev, 1);
+#endif
 
 	if (udev->serial)
 		add_device_randomness(udev->serial, strlen(udev->serial));
@@ -2141,13 +2147,6 @@ int usb_new_device(struct usb_device *udev)
 	if (udev->manufacturer)
 		add_device_randomness(udev->manufacturer,
 				      strlen(udev->manufacturer));
-					  
-#ifdef CONFIG_USB_HOST_NOTIFY
-#if defined(CONFIG_MUIC_MAX77693_SUPPORT_OTG_AUDIO_DOCK)
-	call_audiodock_notify(udev);
-#endif
-	call_battery_notify(udev, 1);
-#endif
 
 	device_enable_async_suspend(&udev->dev);
 

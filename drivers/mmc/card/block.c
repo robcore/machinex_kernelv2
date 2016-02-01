@@ -1323,7 +1323,6 @@ static int mmc_blk_err_check(struct mmc_card *card,
 	 */
 	if (!mmc_host_is_spi(card->host) && rq_data_dir(req) != READ) {
 		u32 status;
-		unsigned long timeout;
 
 		/* Check stop command response */
 		if (brq->stop.resp[0] & R1_ERROR) {
@@ -1332,6 +1331,8 @@ static int mmc_blk_err_check(struct mmc_card *card,
 			       brq->stop.resp[0]);
 			gen_err = 1;
 		}
+
+		unsigned long timeout;
 
 		timeout = jiffies + msecs_to_jiffies(MMC_BLK_TIMEOUT_MS);
 		do {
@@ -2261,10 +2262,6 @@ static int mmc_blk_issue_rq(struct mmc_queue *mq, struct request *req)
 	struct mmc_host *host = card->host;
 	unsigned long flags;
 
-	if (req && !mq->mqrq_prev->req) {
-		/* claim host only for the first request */
-		mmc_claim_host(card->host);
-
 #ifdef CONFIG_MMC_BLOCK_DEFERRED_RESUME
 	if (mmc_bus_needs_resume(card->host)) {
 		mmc_resume_bus(card->host);
@@ -2272,6 +2269,9 @@ static int mmc_blk_issue_rq(struct mmc_queue *mq, struct request *req)
 	}
 #endif
 
+	if (req && !mq->mqrq_prev->req) {
+		/* claim host only for the first request */
+		mmc_claim_host(card->host);
 		if (card->ext_csd.bkops_en)
 			mmc_stop_bkops(card);
 	}

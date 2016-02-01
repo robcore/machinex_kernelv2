@@ -2333,8 +2333,13 @@ static int shmem_remount_fs(struct super_block *sb, int *flags, char *data)
 	 * Preserve previous mempolicy unless mpol remount option was specified.
 	 */
 	if (config.mpol) {
+	/*
+	 * Preserve previous mempolicy unless mpol remount option was specified.
+	 */
+	if (config.mpol) {
 		mpol_put(sbinfo->mpol);
 		sbinfo->mpol = config.mpol;	/* transfers initial ref */
+	}
 	}
 out:
 	spin_unlock(&sbinfo->stat_lock);

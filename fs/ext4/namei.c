@@ -860,7 +860,7 @@ static inline int search_dirblock(struct buffer_head *bh,
 		}
 #else
 		if ((char *) de + namelen <= dlimit &&
-		    ext4_match (namelen, name, de)) {
+			ext4_match (namelen, name, de)) {
 			/* found a match - just to be sure, do a full check */
 			if (ext4_check_dir_entry(dir, NULL, de, bh, offset))
 				return -1;
@@ -1085,6 +1085,8 @@ errout:
 	dxtrace(printk(KERN_DEBUG "%s not found\n", d_name->name));
 	dx_release (frames);
 	return NULL;
+	if (IS_ERR(bh))
+		return (struct dentry *) bh;
 }
 
 static struct dentry *ext4_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
@@ -1109,8 +1111,6 @@ static struct dentry *ext4_lookup(struct inode *dir, struct dentry *dentry, stru
 #else
 	bh = ext4_find_entry(dir, &dentry->d_name, &de);
 #endif
-	if (IS_ERR(bh))
-		return (struct dentry *) bh;
 	inode = NULL;
 	if (bh) {
 		__u32 ino = le32_to_cpu(de->inode);
@@ -1123,14 +1123,14 @@ static struct dentry *ext4_lookup(struct inode *dir, struct dentry *dentry, stru
 			EXT4_ERROR_INODE(dir, "bad inode number: %u", ino);
 			return ERR_PTR(-EIO);
 		}
+		brelse(bh);
+
 		if (unlikely(ino == dir->i_ino)) {
 			EXT4_ERROR_INODE(dir, "'%.*s' linked to parent dir",
 					 dentry->d_name.len,
 					 dentry->d_name.name);
 			return ERR_PTR(-EIO);
 		}
-		brelse(bh);
-
 		inode = ext4_iget_normal(dir->i_sb, ino);
 		if (inode == ERR_PTR(-ESTALE)) {
 			EXT4_ERROR_INODE(dir,
@@ -1154,6 +1154,8 @@ static struct dentry *ext4_lookup(struct inode *dir, struct dentry *dentry, stru
 
 struct dentry *ext4_get_parent(struct dentry *child)
 {
+	if (IS_ERR(bh))
+		return (struct dentry *) bh;
 	__u32 ino;
 	static const struct qstr dotdot = {
 		.name = "..",
@@ -1167,8 +1169,6 @@ struct dentry *ext4_get_parent(struct dentry *child)
 #else
 	bh = ext4_find_entry(child->d_inode, &dotdot, &de);
 #endif
-	if (IS_ERR(bh))
-		return (struct dentry *) bh;
 	if (!bh)
 		return ERR_PTR(-ENOENT);
 	ino = le32_to_cpu(de->inode);
@@ -2319,13 +2319,13 @@ static int ext4_unlink(struct inode *dir, struct dentry *dentry)
 	dquot_initialize(dentry->d_inode);
 
 	retval = -ENOENT;
+	if (IS_ERR(bh))
+		return PTR_ERR(bh);
 #ifdef CONFIG_SDCARD_FS_CI_SEARCH
 	bh = ext4_find_entry(dir, &dentry->d_name, &de, NULL);
 #else
 	bh = ext4_find_entry(dir, &dentry->d_name, &de);
 #endif
-	if (IS_ERR(bh))
-		return PTR_ERR(bh);
 	if (!bh)
 		goto end_unlink;
 
@@ -2537,6 +2537,8 @@ static int ext4_rename(struct inode *old_dir, struct dentry *old_dentry,
 	dquot_initialize(new_dir);
 
 	old_bh = new_bh = dir_bh = NULL;
+	if (IS_ERR(old_bh))
+		return PTR_ERR(old_bh);
 
 	/* Initialize quotas before so that eventual writes go
 	 * in separate transaction */
@@ -2548,10 +2550,13 @@ static int ext4_rename(struct inode *old_dir, struct dentry *old_dentry,
 #else
 	old_bh = ext4_find_entry(old_dir, &old_dentry->d_name, &old_de);
 #endif
-	if (IS_ERR(old_bh))
-		return PTR_ERR(old_bh);
 	/*
 	 *  Check for inode number is _not_ due to possible IO errors.
+	if (IS_ERR(new_bh)) {
+		retval = PTR_ERR(new_bh);
+		new_bh = NULL;
+		goto end_rename;
+	}
 	 *  We might rmdir the source, keep it as pwd of some process
 	 *  and merrily kill the link to whatever was created under the
 	 *  same name. Goodbye sticky bit ;-<
@@ -2567,11 +2572,6 @@ static int ext4_rename(struct inode *old_dir, struct dentry *old_dentry,
 #else
 	new_bh = ext4_find_entry(new_dir, &new_dentry->d_name, &new_de);
 #endif
-		if (IS_ERR(new_bh)) {
-		retval = PTR_ERR(new_bh);
-		new_bh = NULL;
-		goto end_rename;
-	}
 	if (new_bh) {
 		if (!new_inode) {
 			brelse(new_bh);
