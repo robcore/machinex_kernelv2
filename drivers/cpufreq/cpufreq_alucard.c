@@ -82,18 +82,14 @@ static struct alucard_tuners {
 	atomic_t pump_inc_step;
 	atomic_t pump_dec_step;
 } alucard_tuners_ins = {
-	.sampling_rate = ATOMIC_INIT(60000),
-	.inc_cpu_load_at_min_freq = ATOMIC_INIT(60),
+	.sampling_rate = ATOMIC_INIT(50000),
+	.inc_cpu_load_at_min_freq = ATOMIC_INIT(70),
 	.inc_cpu_load = ATOMIC_INIT(70),
-	.dec_cpu_load_at_min_freq = ATOMIC_INIT(40),
-	.dec_cpu_load = ATOMIC_INIT(50),
-#ifdef CONFIG_CPU_EXYNOS4210
-	.freq_responsiveness = ATOMIC_INIT(800000),
-#else
-	.freq_responsiveness = ATOMIC_INIT(918000),
-#endif
+	.dec_cpu_load_at_min_freq = ATOMIC_INIT(70),
+	.dec_cpu_load = ATOMIC_INIT(70),
+	.freq_responsiveness = ATOMIC_INIT(1134000),
 	.pump_inc_step = ATOMIC_INIT(1),
-	.pump_dec_step = ATOMIC_INIT(1),
+	.pump_dec_step = ATOMIC_INIT(2),
 };
 
 /************************** sysfs interface ************************/
@@ -479,11 +475,9 @@ static void do_alucard_timer(struct work_struct *work)
 		delay -= jiffies % delay;
 	}
 
-#ifdef CONFIG_CPU_EXYNOS4210
-	mod_delayed_work_on(cpu, system_wq, &alucard_cpuinfo->work, delay);
-#else
+	alucard_check_cpu(alucard_cpuinfo);
+
 	queue_delayed_work_on(cpu, system_wq, &alucard_cpuinfo->work, delay);
-#endif
 	mutex_unlock(&alucard_cpuinfo->timer_mutex);
 }
 
@@ -536,13 +530,8 @@ static int cpufreq_governor_alucard(struct cpufreq_policy *policy,
 		}
 
 		this_alucard_cpuinfo->enable = 1;
-#ifdef CONFIG_CPU_EXYNOS4210
-		INIT_DEFERRABLE_WORK(&this_alucard_cpuinfo->work, do_alucard_timer);
-		mod_delayed_work_on(this_alucard_cpuinfo->cpu, system_wq, &this_alucard_cpuinfo->work, delay);
-#else
 		INIT_DELAYED_WORK_DEFERRABLE(&this_alucard_cpuinfo->work, do_alucard_timer);
 		queue_delayed_work_on(this_alucard_cpuinfo->cpu, system_wq, &this_alucard_cpuinfo->work, delay);
-#endif
 
 		break;
 

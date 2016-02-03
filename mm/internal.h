@@ -309,8 +309,6 @@ static inline void mminit_verify_pageflags_layout(void)
 {
 }
 
-
-extern void set_pageblock_order(void);
 static inline void mminit_verify_page_links(struct page *page,
 		enum zone_type zone, unsigned long nid, unsigned long pfn)
 {
@@ -346,6 +344,8 @@ extern u64 hwpoison_filter_flags_mask;
 extern u64 hwpoison_filter_flags_value;
 extern u64 hwpoison_filter_memcg;
 extern u32 hwpoison_filter_enable;
+
+extern void set_pageblock_order(void);
 
 /* The ALLOC_WMARK bits are used as an index to zone->watermark */
 #define ALLOC_WMARK_MIN		WMARK_MIN

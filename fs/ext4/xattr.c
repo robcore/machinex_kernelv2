@@ -1288,8 +1288,6 @@ retry:
 					kfree(is); is = NULL;
 					kfree(bs); bs = NULL;
 					brelse(bh);
-					kfree(is); is = NULL;
-					kfree(bs); bs = NULL;
 					goto retry;
 				}
 				error = -1;

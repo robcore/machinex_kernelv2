@@ -2139,7 +2139,6 @@ static void __init netlink_add_usersock_entry(void)
 	nl_table[NETLINK_USERSOCK].module = THIS_MODULE;
 	nl_table[NETLINK_USERSOCK].registered = 1;
 	nl_table[NETLINK_USERSOCK].nl_nonroot = NL_NONROOT_SEND;
-	nl_table[NETLINK_USERSOCK].nl_nonroot = NL_NONROOT_SEND;
 
 	netlink_table_ungrab();
 }

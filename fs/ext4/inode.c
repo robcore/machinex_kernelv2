@@ -2494,8 +2494,7 @@ retry_grab:
 	 * of file which has an already mapped buffer.
 	 */
 retry_journal:
-	handle = ext4_journal_start(inode,
-				ext4_da_write_credits(inode, pos, len));
+	handle = ext4_journal_start(inode, 1);
 	if (IS_ERR(handle)) {
 		page_cache_release(page);
 		return PTR_ERR(handle);
@@ -3978,7 +3977,6 @@ static int ext4_do_update_inode(handle_t *handle,
 	struct buffer_head *bh = iloc->bh;
 	int err = 0, rc, block;
 	int need_datasync = 0;
-	int need_datasync = 0;
 
 	/* For fields not not tracking in the in-memory inode,
 	 * initialise them to zero for new inodes. */
@@ -4028,10 +4026,7 @@ static int ext4_do_update_inode(handle_t *handle,
 			cpu_to_le16(ei->i_file_acl >> 32);
 	raw_inode->i_file_acl_lo = cpu_to_le32(ei->i_file_acl);
 	if (ei->i_disksize != ext4_isize(raw_inode)) {
-	if (ei->i_disksize != ext4_isize(raw_inode)) {
 		ext4_isize_set(raw_inode, ei->i_disksize);
-		need_datasync = 1;
-	}
 		need_datasync = 1;
 	}
 	if (ei->i_disksize > 0x7fffffffULL) {

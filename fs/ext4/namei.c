@@ -1085,8 +1085,6 @@ errout:
 	dxtrace(printk(KERN_DEBUG "%s not found\n", d_name->name));
 	dx_release (frames);
 	return NULL;
-	if (IS_ERR(bh))
-		return (struct dentry *) bh;
 }
 
 static struct dentry *ext4_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
@@ -1125,13 +1123,7 @@ static struct dentry *ext4_lookup(struct inode *dir, struct dentry *dentry, stru
 		}
 		brelse(bh);
 
-		if (unlikely(ino == dir->i_ino)) {
-			EXT4_ERROR_INODE(dir, "'%.*s' linked to parent dir",
-					 dentry->d_name.len,
-					 dentry->d_name.name);
-			return ERR_PTR(-EIO);
-		}
-		inode = ext4_iget_normal(dir->i_sb, ino);
+		inode = ext4_iget(dir->i_sb, ino);
 		if (inode == ERR_PTR(-ESTALE)) {
 			EXT4_ERROR_INODE(dir,
 			 "deleted inode referenced: %u  at parent inode : %lu",
@@ -1154,8 +1146,6 @@ static struct dentry *ext4_lookup(struct inode *dir, struct dentry *dentry, stru
 
 struct dentry *ext4_get_parent(struct dentry *child)
 {
-	if (IS_ERR(bh))
-		return (struct dentry *) bh;
 	__u32 ino;
 	static const struct qstr dotdot = {
 		.name = "..",
@@ -2252,8 +2242,6 @@ static int ext4_rmdir(struct inode *dir, struct dentry *dentry)
 #else
 	bh = ext4_find_entry(dir, &dentry->d_name, &de);
 #endif
-	if (IS_ERR(bh))
-		return PTR_ERR(bh);
 	if (!bh)
 		goto end_rmdir;
 
@@ -2319,8 +2307,6 @@ static int ext4_unlink(struct inode *dir, struct dentry *dentry)
 	dquot_initialize(dentry->d_inode);
 
 	retval = -ENOENT;
-	if (IS_ERR(bh))
-		return PTR_ERR(bh);
 #ifdef CONFIG_SDCARD_FS_CI_SEARCH
 	bh = ext4_find_entry(dir, &dentry->d_name, &de, NULL);
 #else
@@ -2537,8 +2523,6 @@ static int ext4_rename(struct inode *old_dir, struct dentry *old_dentry,
 	dquot_initialize(new_dir);
 
 	old_bh = new_bh = dir_bh = NULL;
-	if (IS_ERR(old_bh))
-		return PTR_ERR(old_bh);
 
 	/* Initialize quotas before so that eventual writes go
 	 * in separate transaction */
@@ -2552,11 +2536,6 @@ static int ext4_rename(struct inode *old_dir, struct dentry *old_dentry,
 #endif
 	/*
 	 *  Check for inode number is _not_ due to possible IO errors.
-	if (IS_ERR(new_bh)) {
-		retval = PTR_ERR(new_bh);
-		new_bh = NULL;
-		goto end_rename;
-	}
 	 *  We might rmdir the source, keep it as pwd of some process
 	 *  and merrily kill the link to whatever was created under the
 	 *  same name. Goodbye sticky bit ;-<
@@ -2664,9 +2643,7 @@ static int ext4_rename(struct inode *old_dir, struct dentry *old_dentry,
 #else
 		old_bh2 = ext4_find_entry(old_dir, &old_dentry->d_name, &old_de2);
 #endif
-		if (IS_ERR(old_bh2)) {
-			retval = PTR_ERR(old_bh2);
-		} else if (old_bh2) {
+		if (old_bh2) {
 			retval = ext4_delete_entry(handle, old_dir,
 						   old_de2, old_bh2);
 			brelse(old_bh2);

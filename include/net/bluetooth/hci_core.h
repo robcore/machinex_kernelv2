@@ -976,7 +976,6 @@ static inline void hci_key_change_cfm(struct hci_conn *conn, __u8 status)
 		if (cb->key_change_cfm)
 			cb->key_change_cfm(conn, status);
 	}
-int mgmt_set_powered_failed(struct hci_dev *hdev, int err);
 	read_unlock_bh(&hci_cb_list_lock);
 }
 

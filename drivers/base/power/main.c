@@ -1009,10 +1009,14 @@ int dpm_suspend_end(pm_message_t state)
 	int error = dpm_suspend_late(state);
 	if (error)
 		return error;
+
 	error = dpm_suspend_noirq(state);
-	if (error)
+	if (error) {
 		dpm_resume_early(resume_event(state));
-	return error;
+		return error;
+	}
+
+	return 0;
 }
 EXPORT_SYMBOL_GPL(dpm_suspend_end);
 
@@ -1169,7 +1173,7 @@ static int device_suspend(struct device *dev)
 	if (pm_async_enabled && dev->power.async_suspend) {
 		get_device(dev);
 		async_schedule(async_suspend, dev);
-		goto Complete;
+		return 0;
 	}
 
 	return __device_suspend(dev, pm_transition, false);
@@ -1235,8 +1239,6 @@ static int device_prepare(struct device *dev, pm_message_t state)
 	int (*callback)(struct device *) = NULL;
 	char *info = NULL;
 	int error = 0;
-
- Complete:
 
 	/*
 	 * If a device's parent goes into runtime suspend at the wrong time,

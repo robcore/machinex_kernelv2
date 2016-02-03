@@ -42,7 +42,6 @@
 #include <asm/system.h>
 #include <linux/uaccess.h>
 #include <asm/unaligned.h>
-#include <net/bluetooth/smp.h>
 
 #include <net/bluetooth/bluetooth.h>
 #include <net/bluetooth/hci_core.h>
@@ -817,9 +816,6 @@ struct hci_conn *hci_connect(struct hci_dev *hdev, int type,
 					__u16 pkt_type, bdaddr_t *dst,
 					__u8 sec_level, __u8 auth_type)
 {
-	if (conn->type == LE_LINK)
-		return smp_conn_security(conn, sec_level);
-
 	struct hci_conn *acl;
 	struct hci_conn *sco;
 

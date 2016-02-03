@@ -85,4 +85,3 @@ module_exit(fifo_exit);
 MODULE_AUTHOR("Aaron Carroll");
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("No-op IO scheduler that actually does nothing");
-

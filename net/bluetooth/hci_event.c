@@ -1357,9 +1357,6 @@ static void hci_cs_sniff_mode(struct hci_dev *hdev, __u8 status)
 	if (conn) {
 		clear_bit(HCI_CONN_MODE_CHANGE_PEND, &conn->pend);
 
-	if (!e)
-		return false;
-
 		if (test_and_clear_bit(HCI_CONN_SCO_SETUP_PEND, &conn->pend))
 			hci_sco_setup(conn, status);
 	}
@@ -1675,12 +1672,7 @@ static inline void hci_conn_complete_evt(struct hci_dev *hdev, struct sk_buff *s
 			mgmt_connected(hdev->id, &ev->bdaddr, 0);
 		} else if (conn->type == LE_LINK) {
 			conn->state = BT_CONNECTED;
-
-			if (!conn->out && !hci_conn_ssp_enabled(conn) &&
-			    !hci_find_link_key(hdev, &ev->bdaddr))
-				conn->disc_timeout = HCI_PAIRING_TIMEOUT;
-			else
-				conn->disc_timeout = HCI_DISCONN_TIMEOUT;
+			conn->disc_timeout = HCI_DISCONN_TIMEOUT;
 			mgmt_connected(hdev->id, &ev->bdaddr, 1);
 		} else
 			conn->state = BT_CONNECTED;

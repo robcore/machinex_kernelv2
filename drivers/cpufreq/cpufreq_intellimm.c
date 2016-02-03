@@ -1,5 +1,5 @@
 /*
- *  drivers/cpufreq/cpufreq_inteiiimm.c
+ *  drivers/cpufreq/cpufreq_intellimm.c
  *
  *  Copyright (C)  2001 Russell King
  *            (C)  2003 Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>.
@@ -41,16 +41,16 @@
 #define MAX_FREQUENCY_UP_THRESHOLD		(100)
 #define MIN_FREQUENCY_DOWN_DIFFERENTIAL		(1)
 
-#ifdef CONFIG_ARCH_MSM8974
-#define DEF_POWER_SAVE_FREQUENCY		(1100000)
-#define DEF_TWO_PHASE_FREQUENCY			(1700000)
-#define DBS_INPUT_EVENT_MIN_FREQ		(1574400)
-#define DEF_FREQUENCY_OPTIMAL			(1190400)
+#ifdef CONFIG_ARCH_MSM8960
+#define DEF_POWER_SAVE_FREQUENCY		(1134000)
+#define DEF_TWO_PHASE_FREQUENCY			(1728000)
+#define DBS_INPUT_EVENT_MIN_FREQ		(1566000)
+#define DEF_FREQUENCY_OPTIMAL			(1242000)
 #define DEF_FREQ_DOWN_STEP			(550000)
-#define DEF_FREQ_DOWN_STEP_BARRIER		(1190400)
+#define DEF_FREQ_DOWN_STEP_BARRIER		(1242000)
 #else
-#define DEF_POWER_SAVE_FREQUENCY		(750000)
-#define DEF_TWO_PHASE_FREQUENCY			(1300000)
+#define DEF_POWER_SAVE_FREQUENCY		(810000)
+#define DEF_TWO_PHASE_FREQUENCY			(1242000)
 #define DBS_INPUT_EVENT_MIN_FREQ		(1026000)
 #define DEF_FREQUENCY_OPTIMAL			(702000)
 #define DEF_FREQ_DOWN_STEP			(250000)
@@ -418,10 +418,8 @@ static ssize_t store_shortcut(struct kobject *a, struct attribute *b,
 	if (ret != 1)
 		return -EINVAL;
 
-	if (dbs_tuners_ins.shortcut != input) {
+	if (dbs_tuners_ins.shortcut != input)
 		dbs_tuners_ins.shortcut = input;
-	}
-
 	return count;
 }
 
@@ -1671,4 +1669,3 @@ fs_initcall(cpufreq_gov_dbs_init);
 module_init(cpufreq_gov_dbs_init);
 #endif
 module_exit(cpufreq_gov_dbs_exit);
-

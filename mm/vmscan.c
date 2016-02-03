@@ -321,7 +321,7 @@ unsigned long shrink_slab(struct shrink_control *shrink,
 
 	list_for_each_entry(shrinker, &shrinker_list, list) {
 		unsigned long long delta;
-		long total_scan, pages_got;
+		long total_scan;
 		long max_pass;
 		int shrink_ret = 0;
 		long nr;
@@ -387,14 +387,10 @@ unsigned long shrink_slab(struct shrink_control *shrink,
 							batch_size);
 			if (shrink_ret == -1)
 				break;
-			if (shrink_ret < nr_before) {
-				pages_got = nr_before - shrink_ret;
-				ret += pages_got;
-				total_scan -= pages_got > batch_size ? pages_got : batch_size;
-			} else {
-				total_scan -= batch_size;
-			}
+			if (shrink_ret < nr_before)
+				ret += nr_before - shrink_ret;
 			count_vm_events(SLABS_SCANNED, batch_size);
+			total_scan -= batch_size;
 
 			cond_resched();
 		}
@@ -2958,7 +2954,8 @@ loop_again:
 				continue;
 			}
 
-			if (!zone_balanced(zone, testorder, 0, end_zone)) {
+			if (!zone_watermark_ok_safe(zone, testorder,
+					high_wmark_pages(zone), end_zone, 0)) {
 				unbalanced_zone = zone;
 				/*
 				 * We are still under min water mark.  This

@@ -32,6 +32,9 @@
 
 #include <trace/events/power.h>
 
+extern ssize_t get_gpu_vdd_levels_str(char *buf);
+extern void set_gpu_vdd_levels(int uv_tbl[]);
+
 /**
  * The "cpufreq driver" - the arch- or hardware-dependent low
  * level driver of CPUFreq support, and its spinlock. This lock
@@ -411,18 +414,7 @@ show_one(cpuinfo_max_freq, cpuinfo.max_freq);
 show_one(cpuinfo_transition_latency, cpuinfo.transition_latency);
 show_one(scaling_min_freq, min);
 show_one(scaling_max_freq, max);
-
-static ssize_t show_scaling_cur_freq(
-	struct cpufreq_policy *policy, char *buf)
-{
-	ssize_t ret;
-
-	if (cpufreq_driver && cpufreq_driver->setpolicy && cpufreq_driver->get)
-		ret = sprintf(buf, "%u\n", cpufreq_driver->get(policy->cpu));
-	else
-		ret = sprintf(buf, "%u\n", policy->cur);
-	return ret;
-}
+show_one(scaling_cur_freq, cur);
 show_one(cpu_utilization, util);
 
 static int __cpufreq_set_policy(struct cpufreq_policy *data,

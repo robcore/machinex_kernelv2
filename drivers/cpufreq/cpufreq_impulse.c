@@ -30,7 +30,6 @@
 #include <linux/kthread.h>
 #include <linux/slab.h>
 #include <asm/cputime.h>
-
 #include <linux/tick.h>
 #include <linux/moduleparam.h>
 #include <linux/jiffies.h>
